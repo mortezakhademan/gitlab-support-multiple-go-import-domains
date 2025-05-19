@@ -9,25 +9,21 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	host := r.Host
-	path := r.URL.Path
-	parts := strings.Split(strings.Trim(path, "/"), "/")
+	path := strings.Trim(r.URL.Path, "/")
+	parts := strings.Split(path, "/")
+
 	if len(parts) < 2 {
 		http.Error(w, "invalid import path", http.StatusBadRequest)
 		return
 	}
 
-	user := parts[0]
-	repo := parts[1]
-	domain := host
+	modulePath := fmt.Sprintf("%s/%s", host, path)
+	repoURL := fmt.Sprintf("https://%s/%s.git", host, path)
 
 	fmt.Fprintf(w, `<html><head>
-<meta name="go-import" content="%s/%s/%s git https://%s/%s/%s.git">
-</head><body>go get https://%s/%s/%s</body></html>`,
-		domain, user, repo,
-		domain, user, repo,
-		domain, user, repo)
-
-	//fmt.Printf("Served %s/%s for %s\n", user, repo, r.RemoteAddr)
+<meta name="go-import" content="%s git %s">
+</head><body>go get %s</body></html>`,
+		modulePath, repoURL, modulePath)
 }
 
 func main() {
